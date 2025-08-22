@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<title>🎰 Лотерея PRO</title>
+<style>
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background: radial-gradient(circle at center, #111, #222, #111);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+h1 {
+  font-size: 2.5rem;
+  margin-bottom: 20px;
+  text-shadow: 0 0 20px gold, 0 0 40px orange;
+}
+
+.wheel {
+  width: 300px;
+  height: 300px;
+  border: 8px solid #444;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 50px rgba(255,215,0,0.5);
+  font-size: 2.5rem;
+  font-weight: bold;
+  transition: transform 0.3s;
+}
+
+.number {
+  color: #ccc;
+  transition: color 0.3s, transform 0.3s;
+}
+
+.number.winner {
+  color: gold;
+  text-shadow: 0 0 20px gold, 0 0 40px orange;
+  transform: scale(1.3);
+}
+
+.spin-btn {
+  margin-top: 30px;
+  padding: 15px 50px;
+  font-size: 1.3rem;
+  border: none;
+  border-radius: 50px;
+  cursor: pointer;
+  background: linear-gradient(135deg, #ffcc00, #ff6600);
+  color: black;
+  font-weight: bold;
+  transition: 0.3s;
+}
+
+.spin-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 0 25px gold;
+}
+
+.result {
+  margin-top: 20px;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+/* конфетті */
+.confetti {
+  position: absolute;
+  width: 10px;
+  height: 10px;
+  background: gold;
+  top: 0;
+  animation: fall 2s linear forwards;
+  opacity: 0.8;
+}
+
+@keyframes fall {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(500px) rotate(360deg); opacity: 0; }
+}
+
+/* адаптивність */
+@media (max-width: 600px) {
+  .wheel { width: 220px; height: 220px; font-size: 2rem; }
+  .spin-btn { padding: 12px 30px; font-size: 1rem; }
+}
+</style>
+</head>
+<body>
+<h1>🎰 Лотерея PRO</h1>
+<div class="wheel" id="wheel">---</div>
+<button class="spin-btn" id="spin">Крутити</button>
+<div class="result" id="result">Натисни, щоб почати!</div>
+
+<script>
+const wheel = document.getElementById("wheel");
+const result = document.getElementById("result");
+const spinBtn = document.getElementById("spin");
+
+// топ-призи
+const topNumbers = {
+  521: "💻 Ноутбук",
+  562: "📱 iPhone",
+  527: "🎧 AirPods",
+  829: "🖥 Монітор",
+  727: "⌚ Apple Watch"
+};
+
+// слабкі спеціальні призи
+const weakNumbers = {
+  530: "☕ Чашка",
+  535: "🖊️ Ручка",
+  540: "🎮 Джойстик",
+  545: "🎲 Настолка",
+  550: "🧢 Кепка",
+  555: "📓 Блокнот"
+};
+
+// обʼєднуємо номери
+let allNumbers = [...Object.keys(topNumbers).map(Number), ...Object.keys(weakNumbers).map(Number)];
+
+// функція тасування
+function shuffle(arr){
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+}
+
+function createConfetti(){
+  for(let i=0;i<30;i++){
+    const conf = document.createElement('div');
+    conf.classList.add('confetti');
+    conf.style.left = Math.random()*100+'%';
+    conf.style.background = `hsl(${Math.random()*360},100%,50%)`;
+    document.body.appendChild(conf);
+    setTimeout(()=>{ conf.remove(); }, 2000);
+  }
+}
+
+let spinning = false;
+
+spinBtn.addEventListener("click", ()=>{
+  if(spinning) return;
+  spinning = true;
+  result.innerHTML = "";
+  shuffle(allNumbers);
+  let index = 0;
+
+  function showNext(){
+    if(index >= allNumbers.length){
+      spinning = false;
+      result.innerHTML += "<br>🎉 Круто! Всі номери пройдені.";
+      return;
+    }
+
+    const num = allNumbers[index];
+    wheel.textContent = num;
+
+    if(topNumbers[num]){
+      wheel.classList.add('winner');
+      createConfetti();
+      new Audio('https://freesound.org/data/previews/320/320654_5260873-lq.mp3').play();
+    } else {
+      wheel.classList.remove('winner');
+      new Audio('https://freesound.org/data/previews/176/176414_285997-lq.mp3').play();
+    }
+
+    let prize = topNumbers[num] || weakNumbers[num] || "🎁 Сюрприз";
+    result.innerHTML += `Номер ${num} → ${prize}<br>`;
+    index++;
+    setTimeout(showNext, 600); // швидкість прокрутки
+  }
+
+  showNext();
+});
+</script>
+</body>
+  </html>
